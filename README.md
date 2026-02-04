@@ -22,7 +22,7 @@
 
 ## Features
 
-- **Group by Domain** - Organize all tabs by their domain with one click
+- **Group by Domain** - Organize all tabs by their domain instantly
 - **Instant Auto-collapse** - Other groups collapse immediately when you switch tabs
 - **Exclude Domains** - Keep specific domains ungrouped
 - **Colorful Groups** - Each domain gets a unique, soft color
