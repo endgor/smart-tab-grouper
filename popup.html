@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Tab Grouper</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Smart Tab Grouper</h1>
+    </header>
+
+    <div class="actions">
+      <button id="groupBtn" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        Group by Domain
+      </button>
+      <button id="ungroupBtn" class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="6" x2="20" y2="6"/>
+          <line x1="4" y1="18" x2="20" y2="18"/>
+        </svg>
+        Ungroup All
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="settings">
+      <h2>Settings</h2>
+
+      <label class="setting">
+        <span class="setting-info">
+          <span class="setting-label">Auto-collapse groups</span>
+          <span class="setting-desc">Collapse other groups when switching tabs</span>
+        </span>
+        <input type="checkbox" id="autoCollapse" class="toggle">
+      </label>
+
+      <label class="setting">
+        <span class="setting-info">
+          <span class="setting-label">Auto-group new tabs</span>
+          <span class="setting-desc">Automatically group tabs as you browse</span>
+        </span>
+        <input type="checkbox" id="autoGroup" class="toggle">
+      </label>
+
+      <label class="setting">
+        <span class="setting-info">
+          <span class="setting-label">Colorful groups</span>
+          <span class="setting-desc">Assign colors to each domain group</span>
+        </span>
+        <input type="checkbox" id="groupColors" class="toggle">
+      </label>
+
+      <label class="setting">
+        <span class="setting-info">
+          <span class="setting-label">Ignore pinned tabs</span>
+          <span class="setting-desc">Don't group pinned tabs</span>
+        </span>
+        <input type="checkbox" id="ignorePinned" class="toggle">
+      </label>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="excluded-domains">
+      <h2>Excluded Domains</h2>
+      <p class="hint">These domains won't be grouped</p>
+
+      <div class="add-domain">
+        <input type="text" id="newDomain" placeholder="e.g. google.com" autocomplete="off">
+        <button id="addDomainBtn" class="btn-icon" title="Add domain">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+      </div>
+
+      <ul id="excludedList" class="excluded-list"></ul>
+    </div>
+
+    <footer>
+      <span class="shortcut">
+        <kbd>⌘</kbd><kbd>⇧</kbd><kbd>K</kbd> to group
+      </span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
