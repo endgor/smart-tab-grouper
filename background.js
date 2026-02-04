@@ -249,17 +249,16 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete') {
     const settings = await getSettings();
     if (settings.autoGroup && !shouldIgnoreUrl(tab.url, settings)) {
-      // Find existing group for this domain or create new one
       const domain = extractDomain(tab.url);
       if (!domain) return;
       if (isDomainExcluded(domain, settings)) return;
 
-      const tabs = await chrome.tabs.query({ currentWindow: true });
+      const allTabs = await chrome.tabs.query({ currentWindow: true });
       const groups = await chrome.tabGroups.query({ windowId: tab.windowId });
 
       // Check if there's already a group for this domain
       for (const group of groups) {
-        const groupTabs = tabs.filter(t => t.groupId === group.id);
+        const groupTabs = allTabs.filter(t => t.groupId === group.id);
         if (groupTabs.length > 0) {
           const groupDomain = extractDomain(groupTabs[0].url);
           if (groupDomain === domain && tab.groupId !== group.id) {
@@ -267,6 +266,31 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             return;
           }
         }
+      }
+
+      // No existing group found - check if there are other ungrouped tabs with same domain
+      const ungroupedSameDomain = allTabs.filter(t =>
+        t.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE &&
+        extractDomain(t.url) === domain &&
+        !shouldIgnoreUrl(t.url, settings)
+      );
+
+      // If there are 2+ ungrouped tabs from same domain, create a new group
+      if (ungroupedSameDomain.length >= 2) {
+        const tabIds = ungroupedSameDomain.map(t => t.id);
+        const groupId = await chrome.tabs.group({ tabIds });
+
+        const groupName = formatDomainName(domain);
+        const updateProps = {
+          title: groupName,
+          collapsed: false
+        };
+
+        if (settings.groupColors) {
+          updateProps.color = getColorForDomain(domain);
+        }
+
+        await chrome.tabGroups.update(groupId, updateProps);
       }
     }
   }
