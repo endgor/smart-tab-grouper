@@ -11,7 +11,7 @@ const DEFAULT_SETTINGS = {
 
 // Color palette for groups
 const COLORS = ['blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange', 'grey'];
-let colorIndex = 0;
+let colorIndex = Math.floor(Math.random() * COLORS.length);
 const domainColorMap = new Map();
 
 // Flag to prevent recursive collapse triggers
