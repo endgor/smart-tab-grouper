@@ -33,7 +33,9 @@
 ## Installation
 
 ### From Chrome Web Store
-*(Coming soon)*
+**[Download Smart Tab Grouper](https://chromewebstore.google.com/detail/smart-tab-grouper/heieojkjneffbibmejagocpmeoalgflb?authuser=0&hl=en-GB)**
+
+
 
 ### Manual Installation (Developer Mode)
 1. Download or clone this repository
