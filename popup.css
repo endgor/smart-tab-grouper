@@ -198,6 +198,10 @@ h2 {
   opacity: 1;
 }
 
+.number-input-wide {
+  width: 68px;
+}
+
 footer {
   margin-top: 16px;
   padding-top: 12px;
@@ -232,11 +236,6 @@ kbd {
 /* Success animation */
 .btn.success {
   background: #10b981 !important;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(0.97); }
 }
 
 /* Excluded domains section */

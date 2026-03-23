@@ -39,14 +39,6 @@
 
       <label class="setting">
         <span class="setting-info">
-          <span class="setting-label">Auto-collapse groups</span>
-          <span class="setting-desc">Collapse other groups when switching tabs</span>
-        </span>
-        <input type="checkbox" id="autoCollapse" class="toggle">
-      </label>
-
-      <label class="setting">
-        <span class="setting-info">
           <span class="setting-label">Auto-group new tabs</span>
           <span class="setting-desc">Automatically group tabs as you browse</span>
         </span>
@@ -55,10 +47,26 @@
 
       <label class="setting">
         <span class="setting-info">
-          <span class="setting-label">Colorful groups</span>
-          <span class="setting-desc">Assign colors to each domain group</span>
+          <span class="setting-label">Min tabs to auto-group</span>
+          <span class="setting-desc">Tabs needed from same domain before grouping</span>
         </span>
-        <input type="checkbox" id="groupColors" class="toggle">
+        <input type="number" id="minTabsToGroup" class="number-input" min="2" max="10" value="2">
+      </label>
+
+      <label class="setting">
+        <span class="setting-info">
+          <span class="setting-label">Ungroup orphaned tabs</span>
+          <span class="setting-desc">Ungroup when only 1 tab remains in a group</span>
+        </span>
+        <input type="checkbox" id="autoUngroupOrphans" class="toggle">
+      </label>
+
+      <label class="setting">
+        <span class="setting-info">
+          <span class="setting-label">Group by subdomain</span>
+          <span class="setting-desc">Separate groups for each subdomain</span>
+        </span>
+        <input type="checkbox" id="groupBySubdomain" class="toggle">
       </label>
 
       <label class="setting">
@@ -71,10 +79,26 @@
 
       <label class="setting">
         <span class="setting-info">
-          <span class="setting-label">Min tabs to auto-group</span>
-          <span class="setting-desc">Tabs needed from same domain before grouping</span>
+          <span class="setting-label">Colorful groups</span>
+          <span class="setting-desc">Assign colors to each domain group</span>
         </span>
-        <input type="number" id="minTabsToGroup" class="number-input" min="2" max="10" value="2">
+        <input type="checkbox" id="groupColors" class="toggle">
+      </label>
+
+      <label class="setting">
+        <span class="setting-info">
+          <span class="setting-label">Auto-collapse groups</span>
+          <span class="setting-desc">Collapse other groups when switching tabs</span>
+        </span>
+        <input type="checkbox" id="autoCollapse" class="toggle">
+      </label>
+
+      <label class="setting">
+        <span class="setting-info">
+          <span class="setting-label">Collapse delay (ms)</span>
+          <span class="setting-desc">Wait before collapsing groups (0 = instant)</span>
+        </span>
+        <input type="number" id="collapseDelay" class="number-input number-input-wide" min="0" max="5000" step="100" value="0">
       </label>
     </div>
 
@@ -98,8 +122,11 @@
     </div>
 
     <footer>
-      <span class="shortcut">
+      <span id="shortcutMac" class="shortcut" style="display:none">
         <kbd>⌘</kbd><kbd>⇧</kbd><kbd>K</kbd> to group
+      </span>
+      <span id="shortcutOther" class="shortcut" style="display:none">
+        <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>K</kbd> to group
       </span>
     </footer>
   </div>

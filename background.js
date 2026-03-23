@@ -79,6 +79,11 @@ function extractDomain(url, groupBySubdomain = false) {
     const urlObj = new URL(url);
     let hostname = urlObj.hostname;
 
+    // If it's an IP address, return as-is (don't strip octets as if they were subdomains)
+    if (/^\d+\.\d+\.\d+\.\d+$/.test(hostname) || hostname.includes(':')) {
+      return hostname;
+    }
+
     if (groupBySubdomain) {
       // Keep full hostname but strip www.
       if (hostname.startsWith('www.')) {
@@ -350,12 +355,16 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
 
 // Listen for group expansion (when user clicks on a group header)
 chrome.tabGroups.onUpdated.addListener(async (group) => {
-  // Only act when a group is expanded (not collapsed)
-  if (!group.collapsed && !isCollapsingGroups) {
-    const settings = await getSettings();
-    if (settings.autoCollapse) {
-      collapseOtherGroups(group.id, group.windowId);
+  try {
+    // Only act when a group is expanded (not collapsed)
+    if (!group.collapsed && !isCollapsingGroups) {
+      const settings = await getSettings();
+      if (settings.autoCollapse) {
+        await collapseOtherGroups(group.id, group.windowId);
+      }
     }
+  } catch (e) {
+    console.warn('Failed to collapse groups on group update:', e.message);
   }
 });
 
