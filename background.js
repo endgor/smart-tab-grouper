@@ -113,6 +113,11 @@ function extractDomain(url, groupBySubdomain = false) {
 function formatDomainName(domain) {
   if (!domain) return 'Other';
 
+  // IP addresses: return as-is
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(domain) || domain.includes(':')) {
+    return domain;
+  }
+
   const parts = domain.split('.');
 
   // Determine how many parts form the TLD suffix
