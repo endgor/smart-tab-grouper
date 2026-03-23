@@ -5,6 +5,7 @@ const DEFAULT_SETTINGS = {
   collapseDelay: 0, // instant
   groupColors: true,
   ignorePinned: true,
+  minTabsToGroup: 2, // Minimum tabs from same domain before auto-grouping
   ignoreUrls: ['chrome://', 'chrome-extension://', 'about:'],
   excludedDomains: [] // User-defined domains to exclude from grouping
 };
@@ -23,15 +24,17 @@ async function getSettings() {
   return { ...DEFAULT_SETTINGS, ...result.settings };
 }
 
-// Extract domain from URL and format it nicely
+// Extract base domain from URL (strips subdomains like www, mail, etc.)
 function extractDomain(url) {
   try {
     const urlObj = new URL(url);
     let hostname = urlObj.hostname;
 
-    // Remove www. prefix
-    if (hostname.startsWith('www.')) {
-      hostname = hostname.substring(4);
+    // Split into parts and return the last two (base domain + TLD)
+    // e.g., "dns.ender.nu" -> "ender.nu", "mail.google.com" -> "google.com"
+    const parts = hostname.split('.');
+    if (parts.length > 2) {
+      hostname = parts.slice(-2).join('.');
     }
 
     return hostname;
@@ -276,7 +279,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       );
 
       // If there are 2+ ungrouped tabs from same domain, create a new group
-      if (ungroupedSameDomain.length >= 2) {
+      if (ungroupedSameDomain.length >= (settings.minTabsToGroup ?? 2)) {
         const tabIds = ungroupedSameDomain.map(t => t.id);
         const groupId = await chrome.tabs.group({ tabIds });
 

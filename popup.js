@@ -5,6 +5,7 @@ const autoCollapseToggle = document.getElementById('autoCollapse');
 const autoGroupToggle = document.getElementById('autoGroup');
 const groupColorsToggle = document.getElementById('groupColors');
 const ignorePinnedToggle = document.getElementById('ignorePinned');
+const minTabsToGroupInput = document.getElementById('minTabsToGroup');
 const newDomainInput = document.getElementById('newDomain');
 const addDomainBtn = document.getElementById('addDomainBtn');
 const excludedList = document.getElementById('excludedList');
@@ -20,6 +21,7 @@ async function loadSettings() {
   autoGroupToggle.checked = currentSettings.autoGroup ?? false;
   groupColorsToggle.checked = currentSettings.groupColors ?? true;
   ignorePinnedToggle.checked = currentSettings.ignorePinned ?? true;
+  minTabsToGroupInput.value = currentSettings.minTabsToGroup ?? 2;
 
   renderExcludedDomains();
 }
@@ -31,7 +33,8 @@ async function saveSettings() {
     autoCollapse: autoCollapseToggle.checked,
     autoGroup: autoGroupToggle.checked,
     groupColors: groupColorsToggle.checked,
-    ignorePinned: ignorePinnedToggle.checked
+    ignorePinned: ignorePinnedToggle.checked,
+    minTabsToGroup: parseInt(minTabsToGroupInput.value, 10) || 2
   };
 
   await chrome.runtime.sendMessage({ action: 'saveSettings', settings: currentSettings });
@@ -119,6 +122,7 @@ autoCollapseToggle.addEventListener('change', saveSettings);
 autoGroupToggle.addEventListener('change', saveSettings);
 groupColorsToggle.addEventListener('change', saveSettings);
 ignorePinnedToggle.addEventListener('change', saveSettings);
+minTabsToGroupInput.addEventListener('change', saveSettings);
 
 addDomainBtn.addEventListener('click', addExcludedDomain);
 
