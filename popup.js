@@ -2,10 +2,13 @@
 const groupBtn = document.getElementById('groupBtn');
 const ungroupBtn = document.getElementById('ungroupBtn');
 const autoCollapseToggle = document.getElementById('autoCollapse');
+const collapseDelayInput = document.getElementById('collapseDelay');
 const autoGroupToggle = document.getElementById('autoGroup');
 const groupColorsToggle = document.getElementById('groupColors');
 const ignorePinnedToggle = document.getElementById('ignorePinned');
+const groupBySubdomainToggle = document.getElementById('groupBySubdomain');
 const minTabsToGroupInput = document.getElementById('minTabsToGroup');
+const autoUngroupOrphansToggle = document.getElementById('autoUngroupOrphans');
 const newDomainInput = document.getElementById('newDomain');
 const addDomainBtn = document.getElementById('addDomainBtn');
 const excludedList = document.getElementById('excludedList');
@@ -18,10 +21,13 @@ async function loadSettings() {
   currentSettings = await chrome.runtime.sendMessage({ action: 'getSettings' });
 
   autoCollapseToggle.checked = currentSettings.autoCollapse ?? true;
+  collapseDelayInput.value = currentSettings.collapseDelay ?? 0;
   autoGroupToggle.checked = currentSettings.autoGroup ?? false;
   groupColorsToggle.checked = currentSettings.groupColors ?? true;
   ignorePinnedToggle.checked = currentSettings.ignorePinned ?? true;
+  groupBySubdomainToggle.checked = currentSettings.groupBySubdomain ?? false;
   minTabsToGroupInput.value = currentSettings.minTabsToGroup ?? 2;
+  autoUngroupOrphansToggle.checked = currentSettings.autoUngroupOrphans ?? false;
 
   renderExcludedDomains();
 }
@@ -31,10 +37,13 @@ async function saveSettings() {
   currentSettings = {
     ...currentSettings,
     autoCollapse: autoCollapseToggle.checked,
+    collapseDelay: parseInt(collapseDelayInput.value, 10) || 0,
     autoGroup: autoGroupToggle.checked,
     groupColors: groupColorsToggle.checked,
     ignorePinned: ignorePinnedToggle.checked,
-    minTabsToGroup: parseInt(minTabsToGroupInput.value, 10) || 2
+    groupBySubdomain: groupBySubdomainToggle.checked,
+    minTabsToGroup: Math.max(2, parseInt(minTabsToGroupInput.value, 10) || 2),
+    autoUngroupOrphans: autoUngroupOrphansToggle.checked
   };
 
   await chrome.runtime.sendMessage({ action: 'saveSettings', settings: currentSettings });
@@ -48,15 +57,23 @@ function renderExcludedDomains() {
   domains.forEach(domain => {
     const li = document.createElement('li');
     li.className = 'excluded-item';
-    li.innerHTML = `
-      <span>${domain}</span>
-      <button class="btn-remove" data-domain="${domain}" title="Remove">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
+
+    const span = document.createElement('span');
+    span.textContent = domain;
+
+    const btn = document.createElement('button');
+    btn.className = 'btn-remove';
+    btn.dataset.domain = domain;
+    btn.title = 'Remove';
+    btn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
     `;
+
+    li.appendChild(span);
+    li.appendChild(btn);
     excludedList.appendChild(li);
   });
 }
@@ -119,10 +136,13 @@ ungroupBtn.addEventListener('click', async () => {
 });
 
 autoCollapseToggle.addEventListener('change', saveSettings);
+collapseDelayInput.addEventListener('change', saveSettings);
 autoGroupToggle.addEventListener('change', saveSettings);
 groupColorsToggle.addEventListener('change', saveSettings);
 ignorePinnedToggle.addEventListener('change', saveSettings);
+groupBySubdomainToggle.addEventListener('change', saveSettings);
 minTabsToGroupInput.addEventListener('change', saveSettings);
+autoUngroupOrphansToggle.addEventListener('change', saveSettings);
 
 addDomainBtn.addEventListener('click', addExcludedDomain);
 
@@ -139,6 +159,10 @@ excludedList.addEventListener('click', (e) => {
     removeExcludedDomain(domain);
   }
 });
+
+// Show platform-appropriate keyboard shortcut
+const isMac = (navigator.userAgentData?.platform ?? navigator.platform).toUpperCase().includes('MAC');
+document.getElementById(isMac ? 'shortcutMac' : 'shortcutOther').style.display = '';
 
 // Initialize
 loadSettings();
