@@ -1,13 +1,13 @@
 // Default settings
 const DEFAULT_SETTINGS = {
-  autoGroup: false,
+  autoGroup: true,
   autoCollapse: true,
   collapseDelay: 0, // milliseconds before collapsing other groups (0 = instant)
   groupColors: true,
   ignorePinned: true,
   groupBySubdomain: false, // When true, subdomains get separate groups
   minTabsToGroup: 2, // Minimum tabs from same domain before auto-grouping
-  autoUngroupOrphans: false, // Ungroup tabs when their group has only 1 tab left
+  autoUngroupOrphans: true, // Ungroup tabs when their group has only 1 tab left
   ignoreUrls: ['chrome://', 'chrome-extension://', 'about:'],
   excludedDomains: [] // User-defined domains to exclude from grouping
 };

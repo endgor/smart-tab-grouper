@@ -22,12 +22,12 @@ async function loadSettings() {
 
   autoCollapseToggle.checked = currentSettings.autoCollapse ?? true;
   collapseDelayInput.value = currentSettings.collapseDelay ?? 0;
-  autoGroupToggle.checked = currentSettings.autoGroup ?? false;
+  autoGroupToggle.checked = currentSettings.autoGroup ?? true;
   groupColorsToggle.checked = currentSettings.groupColors ?? true;
   ignorePinnedToggle.checked = currentSettings.ignorePinned ?? true;
   groupBySubdomainToggle.checked = currentSettings.groupBySubdomain ?? false;
   minTabsToGroupInput.value = currentSettings.minTabsToGroup ?? 2;
-  autoUngroupOrphansToggle.checked = currentSettings.autoUngroupOrphans ?? false;
+  autoUngroupOrphansToggle.checked = currentSettings.autoUngroupOrphans ?? true;
 
   renderExcludedDomains();
 }
