@@ -25,10 +25,10 @@
 - **Group by Domain** - Organize all tabs by their domain instantly
 - **Instant Auto-collapse** - Other groups collapse immediately when you switch tabs
 - **Exclude Domains** - Keep specific domains ungrouped
-- **Colorful Groups** - Each domain gets a unique, soft color
+- **Group Colors** - Cycle through Chrome's palette, use a single color, or let Chrome decide
 - **Preserve Colors** - Manual color changes are respected
-- **Ignore Pinned Tabs** - Pinned tabs stay ungrouped
 - **Auto-group New Tabs** - Optionally group tabs as you browse
+- **Respects Your Groups** - Groups you create yourself are never touched
 
 ## Installation
 
@@ -49,11 +49,14 @@
 1. Click the extension icon in your toolbar to open the popup
 2. Click **"Group by Domain"** to organize all your tabs
 3. Toggle settings as needed:
-   - **Auto-collapse groups** - Collapse other groups when switching tabs
    - **Auto-group new tabs** - Automatically group tabs as you browse
-   - **Colorful groups** - Assign colors to each domain
-   - **Ignore pinned tabs** - Don't group pinned tabs
-4. Add domains to the exclude list to keep them ungrouped
+   - **Auto-collapse groups** - Collapse other groups when switching tabs
+   - **Ungroup orphaned tabs** - Dissolve a group when only one tab is left
+   - **Group colors** - *Auto* (cycle the palette), *Single color*, or *Chrome default*
+   - **Advanced** - Minimum tabs before grouping, group by subdomain, collapse delay
+4. Use **Exclude current site** or type a domain to keep it ungrouped
+
+Pinned tabs are never grouped (Chrome unpins a tab when it joins a group).
 
 ## Keyboard Shortcuts
 

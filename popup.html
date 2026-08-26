@@ -40,49 +40,9 @@
       <label class="setting">
         <span class="setting-info">
           <span class="setting-label">Auto-group new tabs</span>
-          <span class="setting-desc">Automatically group tabs as you browse</span>
+          <span class="setting-desc">Group tabs by site as you browse</span>
         </span>
         <input type="checkbox" id="autoGroup" class="toggle">
-      </label>
-
-      <label class="setting">
-        <span class="setting-info">
-          <span class="setting-label">Min tabs to auto-group</span>
-          <span class="setting-desc">Tabs needed from same domain before grouping</span>
-        </span>
-        <input type="number" id="minTabsToGroup" class="number-input" min="2" max="10" value="2">
-      </label>
-
-      <label class="setting">
-        <span class="setting-info">
-          <span class="setting-label">Ungroup orphaned tabs</span>
-          <span class="setting-desc">Ungroup when only 1 tab remains in a group</span>
-        </span>
-        <input type="checkbox" id="autoUngroupOrphans" class="toggle">
-      </label>
-
-      <label class="setting">
-        <span class="setting-info">
-          <span class="setting-label">Group by subdomain</span>
-          <span class="setting-desc">Separate groups for each subdomain</span>
-        </span>
-        <input type="checkbox" id="groupBySubdomain" class="toggle">
-      </label>
-
-      <label class="setting">
-        <span class="setting-info">
-          <span class="setting-label">Ignore pinned tabs</span>
-          <span class="setting-desc">Don't group pinned tabs</span>
-        </span>
-        <input type="checkbox" id="ignorePinned" class="toggle">
-      </label>
-
-      <label class="setting">
-        <span class="setting-info">
-          <span class="setting-label">Colorful groups</span>
-          <span class="setting-desc">Assign colors to each domain group</span>
-        </span>
-        <input type="checkbox" id="groupColors" class="toggle">
       </label>
 
       <label class="setting">
@@ -95,11 +55,71 @@
 
       <label class="setting">
         <span class="setting-info">
-          <span class="setting-label">Collapse delay (ms)</span>
-          <span class="setting-desc">Wait before collapsing groups (0 = instant)</span>
+          <span class="setting-label">Ungroup orphaned tabs</span>
+          <span class="setting-desc">Ungroup when only 1 tab remains in a group</span>
         </span>
-        <input type="number" id="collapseDelay" class="number-input number-input-wide" min="0" max="5000" step="100" value="0">
+        <input type="checkbox" id="autoUngroupOrphans" class="toggle">
       </label>
+
+      <label class="setting">
+        <span class="setting-info">
+          <span class="setting-label">Group colors</span>
+          <span class="setting-desc" id="colorModeDesc">Cycle through the palette</span>
+        </span>
+        <select id="colorMode" class="select-input">
+          <option value="auto">Auto</option>
+          <option value="fixed">Single color</option>
+          <option value="default">Chrome default</option>
+        </select>
+      </label>
+
+      <label class="setting setting-sub" id="fixedColorSetting">
+        <span class="setting-info">
+          <span class="setting-label">Color</span>
+        </span>
+        <span class="color-select">
+          <span class="color-swatch" id="fixedColorSwatch"></span>
+          <select id="fixedColor" class="select-input">
+            <option value="grey">Grey</option>
+            <option value="blue">Blue</option>
+            <option value="red">Red</option>
+            <option value="yellow">Yellow</option>
+            <option value="green">Green</option>
+            <option value="pink">Pink</option>
+            <option value="purple">Purple</option>
+            <option value="cyan">Cyan</option>
+            <option value="orange">Orange</option>
+          </select>
+        </span>
+      </label>
+
+      <details class="advanced" id="advanced">
+        <summary>Advanced</summary>
+
+        <label class="setting">
+          <span class="setting-info">
+            <span class="setting-label">Min tabs to auto-group</span>
+            <span class="setting-desc">Tabs from one site before a group is made</span>
+          </span>
+          <input type="number" id="minTabsToGroup" class="number-input" min="2" max="10" value="2">
+        </label>
+
+        <label class="setting">
+          <span class="setting-info">
+            <span class="setting-label">Group by subdomain</span>
+            <span class="setting-desc">Separate groups for each subdomain</span>
+          </span>
+          <input type="checkbox" id="groupBySubdomain" class="toggle">
+        </label>
+
+        <label class="setting" id="collapseDelaySetting">
+          <span class="setting-info">
+            <span class="setting-label">Collapse delay (ms)</span>
+            <span class="setting-desc">Wait before collapsing (0 = instant)</span>
+          </span>
+          <input type="number" id="collapseDelay" class="number-input number-input-wide" min="0" max="5000" step="100" value="0">
+        </label>
+      </details>
     </div>
 
     <div class="divider"></div>
@@ -107,6 +127,10 @@
     <div class="excluded-domains">
       <h2>Excluded Domains</h2>
       <p class="hint">These domains won't be grouped</p>
+
+      <button id="excludeCurrentBtn" class="btn btn-secondary btn-small" type="button">
+        Exclude current site<span id="excludeCurrentDomain" class="btn-detail"></span>
+      </button>
 
       <div class="add-domain">
         <input type="text" id="newDomain" placeholder="e.g. google.com" autocomplete="off">

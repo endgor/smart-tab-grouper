@@ -4,8 +4,14 @@ const ungroupBtn = document.getElementById('ungroupBtn');
 const autoCollapseToggle = document.getElementById('autoCollapse');
 const collapseDelayInput = document.getElementById('collapseDelay');
 const autoGroupToggle = document.getElementById('autoGroup');
-const groupColorsToggle = document.getElementById('groupColors');
-const ignorePinnedToggle = document.getElementById('ignorePinned');
+const colorModeSelect = document.getElementById('colorMode');
+const colorModeDesc = document.getElementById('colorModeDesc');
+const collapseDelaySetting = document.getElementById('collapseDelaySetting');
+const fixedColorSelect = document.getElementById('fixedColor');
+const fixedColorSetting = document.getElementById('fixedColorSetting');
+const fixedColorSwatch = document.getElementById('fixedColorSwatch');
+const excludeCurrentBtn = document.getElementById('excludeCurrentBtn');
+const excludeCurrentDomain = document.getElementById('excludeCurrentDomain');
 const groupBySubdomainToggle = document.getElementById('groupBySubdomain');
 const minTabsToGroupInput = document.getElementById('minTabsToGroup');
 const autoUngroupOrphansToggle = document.getElementById('autoUngroupOrphans');
@@ -15,21 +21,76 @@ const excludedList = document.getElementById('excludedList');
 
 // Current settings
 let currentSettings = {};
+let currentDomain = null;
+
+const COLOR_MODE_DESC = {
+  auto: 'Cycle through the palette',
+  fixed: 'Every group gets the same color',
+  default: 'Let Chrome choose'
+};
+
+// Send a message to the background and return its response, throwing on failure
+async function sendMessage(message) {
+  const response = await chrome.runtime.sendMessage(message);
+  if (!response?.success) {
+    throw new Error(response?.error ?? 'No response from background');
+  }
+  return response;
+}
+
+// Clamp a number input to its min/max attributes
+function readNumber(input, fallback) {
+  const value = parseInt(input.value, 10);
+  if (Number.isNaN(value)) return fallback;
+  const min = input.min !== '' ? Number(input.min) : -Infinity;
+  const max = input.max !== '' ? Number(input.max) : Infinity;
+  return Math.min(max, Math.max(min, value));
+}
 
 // Load settings on popup open
 async function loadSettings() {
-  currentSettings = await chrome.runtime.sendMessage({ action: 'getSettings' });
+  try {
+    ({ settings: currentSettings } = await sendMessage({ action: 'getSettings' }));
+  } catch (e) {
+    console.warn('Failed to load settings:', e.message);
+    currentSettings = {};
+  }
 
   autoCollapseToggle.checked = currentSettings.autoCollapse ?? true;
   collapseDelayInput.value = currentSettings.collapseDelay ?? 0;
   autoGroupToggle.checked = currentSettings.autoGroup ?? true;
-  groupColorsToggle.checked = currentSettings.groupColors ?? true;
-  ignorePinnedToggle.checked = currentSettings.ignorePinned ?? true;
+  colorModeSelect.value = currentSettings.colorMode ?? 'auto';
+  fixedColorSelect.value = currentSettings.fixedColor ?? 'grey';
   groupBySubdomainToggle.checked = currentSettings.groupBySubdomain ?? false;
   minTabsToGroupInput.value = currentSettings.minTabsToGroup ?? 2;
   autoUngroupOrphansToggle.checked = currentSettings.autoUngroupOrphans ?? true;
 
+  updateDependentControls();
   renderExcludedDomains();
+}
+
+// Reflect relationships between controls
+function updateDependentControls() {
+  colorModeDesc.textContent = COLOR_MODE_DESC[colorModeSelect.value] ?? '';
+  collapseDelaySetting.classList.toggle('disabled', !autoCollapseToggle.checked);
+  fixedColorSetting.classList.toggle('hidden', colorModeSelect.value !== 'fixed');
+  fixedColorSwatch.dataset.color = fixedColorSelect.value;
+}
+
+// Load the active tab's domain for the "Exclude current site" button
+async function loadCurrentDomain() {
+  try {
+    ({ domain: currentDomain } = await sendMessage({ action: 'getCurrentDomain' }));
+  } catch {
+    currentDomain = null;
+  }
+  updateExcludeCurrentButton();
+}
+
+function updateExcludeCurrentButton() {
+  const excluded = currentDomain && (currentSettings.excludedDomains ?? []).includes(currentDomain);
+  excludeCurrentBtn.disabled = !currentDomain || excluded;
+  excludeCurrentDomain.textContent = currentDomain ? (excluded ? `${currentDomain} excluded` : currentDomain) : '';
 }
 
 // Save settings
@@ -37,16 +98,26 @@ async function saveSettings() {
   currentSettings = {
     ...currentSettings,
     autoCollapse: autoCollapseToggle.checked,
-    collapseDelay: parseInt(collapseDelayInput.value, 10) || 0,
+    collapseDelay: readNumber(collapseDelayInput, 0),
     autoGroup: autoGroupToggle.checked,
-    groupColors: groupColorsToggle.checked,
-    ignorePinned: ignorePinnedToggle.checked,
+    colorMode: colorModeSelect.value,
+    fixedColor: fixedColorSelect.value,
     groupBySubdomain: groupBySubdomainToggle.checked,
-    minTabsToGroup: Math.max(2, parseInt(minTabsToGroupInput.value, 10) || 2),
+    minTabsToGroup: readNumber(minTabsToGroupInput, 2),
     autoUngroupOrphans: autoUngroupOrphansToggle.checked
   };
 
-  await chrome.runtime.sendMessage({ action: 'saveSettings', settings: currentSettings });
+  updateDependentControls();
+  await persistSettings();
+}
+
+// Persist current settings; the background keeps only the keys the UI owns
+async function persistSettings() {
+  try {
+    await sendMessage({ action: 'saveSettings', settings: currentSettings });
+  } catch (e) {
+    console.warn('Failed to save settings:', e.message);
+  }
 }
 
 // Render excluded domains list
@@ -78,7 +149,21 @@ function renderExcludedDomains() {
   });
 }
 
-// Add domain to excluded list
+// Add a domain to the excluded list (no-op if already present)
+async function excludeDomain(domain) {
+  if (!domain) return;
+  if (!currentSettings.excludedDomains) {
+    currentSettings.excludedDomains = [];
+  }
+  if (!currentSettings.excludedDomains.includes(domain)) {
+    currentSettings.excludedDomains.push(domain);
+    await persistSettings();
+  }
+  renderExcludedDomains();
+  updateExcludeCurrentButton();
+}
+
+// Add the typed domain to the excluded list
 async function addExcludedDomain() {
   let domain = newDomainInput.value.trim().toLowerCase();
 
@@ -87,23 +172,8 @@ async function addExcludedDomain() {
   // Remove trailing slashes and paths
   domain = domain.split('/')[0];
 
-  if (!domain) return;
-
-  // Check if already excluded
-  if (!currentSettings.excludedDomains) {
-    currentSettings.excludedDomains = [];
-  }
-
-  if (currentSettings.excludedDomains.includes(domain)) {
-    newDomainInput.value = '';
-    return;
-  }
-
-  currentSettings.excludedDomains.push(domain);
-  await chrome.runtime.sendMessage({ action: 'saveSettings', settings: currentSettings });
-
   newDomainInput.value = '';
-  renderExcludedDomains();
+  await excludeDomain(domain);
 }
 
 // Remove domain from excluded list
@@ -111,42 +181,41 @@ async function removeExcludedDomain(domain) {
   if (!currentSettings.excludedDomains) return;
 
   currentSettings.excludedDomains = currentSettings.excludedDomains.filter(d => d !== domain);
-  await chrome.runtime.sendMessage({ action: 'saveSettings', settings: currentSettings });
+  await persistSettings();
 
   renderExcludedDomains();
+  updateExcludeCurrentButton();
 }
 
-// Show success feedback on button
-function showSuccess(button) {
-  button.classList.add('success');
-  setTimeout(() => {
-    button.classList.remove('success');
-  }, 600);
+// Run an action and flash the button green on success
+async function runAction(button, action) {
+  button.disabled = true;
+  try {
+    await sendMessage({ action });
+    button.classList.add('success');
+    setTimeout(() => button.classList.remove('success'), 600);
+  } catch (e) {
+    console.warn(`${action} failed:`, e.message);
+  } finally {
+    button.disabled = false;
+  }
 }
 
 // Event listeners
-groupBtn.addEventListener('click', async () => {
-  await chrome.runtime.sendMessage({ action: 'groupTabs' });
-  showSuccess(groupBtn);
-});
+groupBtn.addEventListener('click', () => runAction(groupBtn, 'groupTabs'));
+ungroupBtn.addEventListener('click', () => runAction(ungroupBtn, 'ungroupTabs'));
 
-ungroupBtn.addEventListener('click', async () => {
-  await chrome.runtime.sendMessage({ action: 'ungroupTabs' });
-  showSuccess(ungroupBtn);
-});
+for (const el of [
+  autoCollapseToggle, collapseDelayInput, autoGroupToggle, colorModeSelect, fixedColorSelect,
+  groupBySubdomainToggle, minTabsToGroupInput, autoUngroupOrphansToggle
+]) {
+  el.addEventListener('change', saveSettings);
+}
 
-autoCollapseToggle.addEventListener('change', saveSettings);
-collapseDelayInput.addEventListener('change', saveSettings);
-autoGroupToggle.addEventListener('change', saveSettings);
-groupColorsToggle.addEventListener('change', saveSettings);
-ignorePinnedToggle.addEventListener('change', saveSettings);
-groupBySubdomainToggle.addEventListener('change', saveSettings);
-minTabsToGroupInput.addEventListener('change', saveSettings);
-autoUngroupOrphansToggle.addEventListener('change', saveSettings);
-
+excludeCurrentBtn.addEventListener('click', () => excludeDomain(currentDomain));
 addDomainBtn.addEventListener('click', addExcludedDomain);
 
-newDomainInput.addEventListener('keypress', (e) => {
+newDomainInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
     addExcludedDomain();
   }
@@ -165,4 +234,4 @@ const isMac = (navigator.userAgentData?.platform ?? navigator.platform).toUpperC
 document.getElementById(isMac ? 'shortcutMac' : 'shortcutOther').style.display = '';
 
 // Initialize
-loadSettings();
+loadSettings().then(loadCurrentDomain);
